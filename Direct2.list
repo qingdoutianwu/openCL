@@ -1,14 +1,22 @@
 # ==========================
 ### MyList (User Custom Rules)
 # ==========================
-DOMAIN-SUFFIX,eastmoney.com
+#体育直播
 DOMAIN-SUFFIX,zhibo8.com
 DOMAIN-SUFFIX,kqzb123.com
+
+#中国联通
 DOMAIN-SUFFIX,chinaunicom.cn
+
 #APTV
 DOMAIN-SUFFIX,aptv.app
 DOMAIN-SUFFIX,bit.ly
 DOMAIN-SUFFIX,iill.top
+
+#fiance，东方财富、同花顺、证券时报
+DOMAIN-SUFFIX,eastmoney.com
+DOMAIN-SUFFIX,10jqka.com.cn
+DOMAIN-SUFFIX,stcn.com
 
 
 
