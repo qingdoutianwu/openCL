@@ -18,6 +18,11 @@ DOMAIN-SUFFIX,eastmoney.com
 DOMAIN-SUFFIX,10jqka.com.cn
 DOMAIN-SUFFIX,stcn.com
 
+#国区icloud
+DOMAIN-SUFFIX,icloud.com.cn
+
+
+
 
 
 # 域名后缀匹配
