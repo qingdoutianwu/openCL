@@ -2,8 +2,7 @@
 USER-AGENT,Disney+*
 USER-AGENT,DisneyPlus*
 USER-AGENT,Star+*
-PROCESS-NAME,com.disney.disneyplus
-PROCESS-NAME,com.disney.datg.videoplatforms.android.abc
+
 
 # 20th Century & ABC
 DOMAIN-SUFFIX,20thcenturystudios.com.au
