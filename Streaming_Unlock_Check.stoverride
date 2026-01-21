@@ -1,12 +1,12 @@
-name: Collapsed Tiles - Unlock Monitor (Fixed)
-desc: "Fixed: Added 'argument' field to force display of inline script tiles (Disney+, Spotify, etc.)"
+name: Collapsed Tiles - Unlock Monitor (Local Fixed)
+desc: "本地修复版：移除了 SUBSCRIBED 标记，强制显示所有内嵌脚本 Tile。"
 
 # ==========================================
-# UI Configuration (Tiles)
-# IMPORTANT: Tiles using inline 'content' scripts MUST have an 'argument' field.
+# ⚠️ 重要：绝对不要在第一行加 #SUBSCRIBED
 # ==========================================
+
 tiles:
-  # --- 1. Official Remote Scripts (These already worked) ---
+  # --- 1. 官方远程脚本 (原本能显示) ---
   - name: ChatGPT-Web-Check
     title: ChatGPT Web
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
@@ -31,47 +31,47 @@ tiles:
     collapsed: true
     url: https://www.netflix.com
 
-  # --- 2. Inline Scripts (Fixed by adding argument: "") ---
+  # --- 2. 内嵌脚本 (通过删除订阅头 + 添加 argument 修复) ---
   - name: Disney-Check
     title: Disney+
     icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png
     collapsed: true
     url: https://www.disneyplus.com
-    argument: "" 
+    argument: "check"
 
   - name: Spotify-Check
     title: Spotify
     icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png
     collapsed: true
     url: https://open.spotify.com
-    argument: ""
+    argument: "check"
 
   - name: Claude-Check
     title: Claude
     icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png
     collapsed: true
     url: https://claude.ai
-    argument: ""
+    argument: "check"
 
   - name: HBO-Max-Check
     title: HBO Max
     icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png
     collapsed: true
     url: https://www.max.com
-    argument: ""
+    argument: "check"
 
   - name: PrimeVideo-Check
     title: Prime Video
     icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png
     collapsed: true
     url: https://www.primevideo.com
-    argument: ""
+    argument: "check"
 
 # ==========================================
-# Script Logic (Script Providers)
+# 脚本逻辑
 # ==========================================
 script-providers:
-  # --- Official Remote Sources ---
+  # --- 官方源 ---
   ChatGPT-Web-Check:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/chatgpt-web.js
     interval: 86400
@@ -85,7 +85,7 @@ script-providers:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/netflix.js
     interval: 86400
 
-  # --- Inline Script Content ---
+  # --- 内嵌源 (IIFE 模式防止变量冲突) ---
   Disney-Check:
     interval: 86400
     content: |
