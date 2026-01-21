@@ -1,0 +1,31 @@
+#!name=Third-Party Streaming Unlock Check (Stash)
+#!desc=面板检测 + streaming.test 网页检测（含 Netflix / Disney+ / HBO Max / Prime Video）
+#!system=ios
+
+[Panel]
+# HotKids：一屏检测（含 Netflix / Disney+ / HBO Max 等）
+media-check-panel = type=generic, script-name=media-check, title="流媒体&AI 可用性(HotKids)", update-interval=600, content="点我刷新"
+
+# 可选：保留 Hyseen 的单项面板（如果你更习惯分开看）
+nf_check = script-name=nf_check, title="Netflix 解锁检测(单项)", content="请刷新", update-interval=60
+disney_check = script-name=disney_check, title="Disney+ 解锁检测(单项)", content="请刷新", update-interval=1800
+hbo_check_tip = title="HBO/Prime 网页检测", content="Safari 打开 https://streaming.test（需在 Stash 代理下）", update-interval=0
+
+[Script]
+# HotKids 面板脚本（参数：nfprice=true/false）
+media-check = type=generic, timeout=30, script-path=https://raw.githubusercontent.com/HotKids/Rules/master/Surge/Module/Scripts/media-check.js, argument=nfprice=true
+
+# Hyseen 单项脚本
+nf_check = type=generic, timeout=10, script-path=https://gist.githubusercontent.com/Hyseen/b06e911a41036ebc36acf04ddebe7b9a/raw/nf_check.js, argument=title=Netflix%20%E8%A7%A3%E9%94%81%E6%A3%80%E6%B5%8B
+disney_check = type=generic, timeout=10, script-path=https://gist.githubusercontent.com/Hyseen/729fc4c3ac28c3f2e7c4a832d81780f3/raw/disney_check.js, argument=title=Disney%2B%20%E8%A7%A3%E9%94%81%E6%A3%80%E6%B5%8B
+
+# streaming.test：网页检测（更全，含 HBO Max / PrimeVideo）
+# 使用方法：打开 Stash 代理后，用 Safari 访问 https://streaming.test/
+Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
+Netflix = type=http-request, pattern=^https:\/\/streaming\.test\/netflix\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/netflix.js, timeout=60
+Disney = type=http-request, pattern=^https:\/\/streaming\.test\/disney\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/disney.js, timeout=60
+HBO\ Max = type=http-request, pattern=^https:\/\/streaming\.test\/max\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/max.js, timeout=60
+PrimeVideo = type=http-request, pattern=^https:\/\/streaming\.test\/primevideo\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/primevideo.js, timeout=60
+
+[MITM]
+hostname = %APPEND% streaming.test
