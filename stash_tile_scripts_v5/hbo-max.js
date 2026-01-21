@@ -1,11 +1,11 @@
 const URL = "https://www.max.com/";
 const HINTS = ["not available in your region", "not available in your location", "service area"];
+const HEADERS = {
+  "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+  "Accept-Language": "en-US,en;q=0.9"
+};
 
-$httpClient.get({
-  url: URL,
-  timeout: 8000,
-  headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" }
-}, (err, resp, body) => {
+$httpClient.get({ url: URL, timeout: 8000, headers: HEADERS }, (err, resp, body) => {
   const meta = { title: "HBO Max", icon: "https://logo.clearbit.com/max.com", url: URL };
   if (err || !resp) return $done({ ...meta, content: "❌ Request Failed" });
 
