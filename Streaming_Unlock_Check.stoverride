@@ -1,72 +1,99 @@
-// Unlock Summary (Collapsed Tile) - Parallel High Performance
-const TIMEOUT = 8000;
-const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+name: Streaming_Unlock_Check
+desc: Streaming unlock checks (ChatGPT/Netflix/Disney/YouTube Premium/Spotify/Claude/HBO Max/Prime Video + Summary)
+icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/netflix.png
 
-// 定义检测列表 (顺序决定显示顺序)
-const SERVICES = [
-  { name: "Netflix", url: "https://www.netflix.com/title/81215567", hints: ["not available"] },
-  { name: "Disney+", url: "https://www.disneyplus.com/", hints: ["not available in your region", "not available in your location"] },
-  { name: "YouTube Premium", url: "https://www.youtube.com/premium", hints: ["premium is not available", "not available in your country", "not available in your region"] },
-  { name: "Spotify", url: "https://open.spotify.com/", hints: ["spotify is currently not available", "not available in your country"] },
-  { name: "ChatGPT", url: "https://chatgpt.com/", hints: ["access denied", "error 1020"] },
-  { name: "Claude", url: "https://claude.ai/login", hints: ["app unavailable", "credits exhausted"] },
-  { name: "HBO Max", url: "https://www.max.com/", hints: ["not available in your region", "not available in your location"] },
-  { name: "Prime Video", url: "https://www.primevideo.com/", hints: ["not available in your region", "unavailable in your region"] }
-];
+tiles:
+  - name: ChatGPT-Web-Check
+    title: ChatGPT Web
+    icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
+    collapsed: true
+    url: https://chatgpt.com
+    interval: 900
 
-function check(item) {
-  return new Promise((resolve) => {
-    $httpClient.get({
-      url: item.url,
-      timeout: TIMEOUT,
-      headers: { "User-Agent": UA }
-    }, (err, resp, body) => {
-      // 1. 网络/请求错误
-      if (err || !resp) return resolve({ name: item.name, ok: false, msg: "Error" });
-      
-      const code = resp.status;
-      const t = (body || "").toLowerCase();
+  - name: Netflix-Check
+    title: Netflix
+    icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/netflix.png
+    collapsed: true
+    url: https://www.netflix.com
+    interval: 900
 
-      // 2. Netflix 特殊逻辑 (Netflix 经常返回 404 但其实是解锁 Originals，只有明确 not available 才算挂)
-      if (item.name === "Netflix") {
-        if (t.includes("not available in your area")) return resolve({ name: item.name, ok: false, msg: "Geo Blocked" });
-        if (code === 403) return resolve({ name: item.name, ok: false, msg: "Forbidden" });
-        // Netflix 404 很多时候是只有自制剧，但也算能看，姑且算 OK，或者你可以标记为 "Originals"
-        return resolve({ name: item.name, ok: true, msg: "" }); 
-      }
+  - name: Unlock-Summary
+    title: Unlock Summary
+    icon: https://logo.clearbit.com/chatgpt.com
+    collapsed: true
+    url: https://chatgpt.com
+    interval: 900
 
-      // 3. 通用状态码拦截
-      if (code === 403) return resolve({ name: item.name, ok: false, msg: "Forbidden" });
-      if (code === 451) return resolve({ name: item.name, ok: false, msg: "Unavailable" });
+  - name: Disney-Check
+    title: Disney+
+    icon: https://logo.clearbit.com/disneyplus.com
+    collapsed: true
+    url: https://www.disneyplus.com
+    interval: 900
 
-      // 4. 关键词拦截
-      if (item.hints) {
-        for (const h of item.hints) {
-          if (t.includes(h)) return resolve({ name: item.name, ok: false, msg: "Geo Blocked" });
-        }
-      }
+  - name: YouTube-Premium-Check
+    title: YouTube Premium
+    icon: https://logo.clearbit.com/youtube.com
+    collapsed: true
+    url: https://www.youtube.com/premium
+    interval: 900
 
-      // 5. 成功判定
-      if (code >= 200 && code < 400) return resolve({ name: item.name, ok: true, msg: "" });
-      
-      // 6. 其他失败
-      resolve({ name: item.name, ok: false, msg: `HTTP ${code}` });
-    });
-  });
-}
+  - name: Spotify-Check
+    title: Spotify
+    icon: https://logo.clearbit.com/spotify.com
+    collapsed: true
+    url: https://open.spotify.com
+    interval: 900
 
-// 并发执行所有检测
-Promise.all(SERVICES.map(check)).then(results => {
-  const lines = results.map(r => {
-    const icon = r.ok ? "✅ " : "❌ ";
-    const extra = r.msg ? ` (${r.msg})` : "";
-    return `${icon}${r.name}${extra}`;
-  });
+  - name: Claude-Check
+    title: Claude
+    icon: https://logo.clearbit.com/claude.ai
+    collapsed: true
+    url: https://claude.ai
+    interval: 900
 
-  $done({
-    title: "Unlock Summary",
-    content: lines.join("\n"),
-    icon: "https://logo.clearbit.com/chatgpt.com",
-    url: "https://chatgpt.com"
-  });
-});
+  - name: HBO-Max-Check
+    title: HBO Max (Max)
+    icon: https://logo.clearbit.com/max.com
+    collapsed: true
+    url: https://www.max.com
+    interval: 900
+
+  - name: PrimeVideo-Check
+    title: Prime Video
+    icon: https://logo.clearbit.com/primevideo.com
+    collapsed: true
+    url: https://www.primevideo.com
+    interval: 900
+
+script-providers:
+  # 官方成熟脚本（StashNetworks 示例）
+  ChatGPT-Web-Check:
+    url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/chatgpt-web.js
+    interval: 86400
+  Netflix-Check:
+    url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/netflix.js
+    interval: 86400
+
+  # 你的脚本（已托管到 GitHub，并通过 jsDelivr 引用）
+  Unlock-Summary:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/unlock-summary.js
+    interval: 86400
+  Disney-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/disney.js
+    interval: 86400
+  YouTube-Premium-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/youtube-premium.js
+    interval: 86400
+  Spotify-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/spotify.js
+    interval: 86400
+  Claude-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/claude.js
+    interval: 86400
+  HBO-Max-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/hbo-max.js
+    interval: 86400
+  PrimeVideo-Check:
+    url: https://fastly.jsdelivr.net/gh/qingdoutianwu/openCL@main/stash_tile_scripts_v5/primevideo.js
+    interval: 86400
