@@ -1,73 +1,72 @@
-// Unlock Summary (Collapsed Tile)
-const TIMEOUT = 9000;
+// Unlock Summary (Collapsed Tile) - Parallel High Performance
+const TIMEOUT = 8000;
 const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-const LANG = "en-US,en;q=0.9";
 
-function get(url, cb) {
-  $httpClient.get({
-    url,
-    timeout: TIMEOUT,
-    headers: {
-      "User-Agent": UA,
-      "Accept-Language": LANG,
-      "Cache-Control": "no-cache",
-      "Pragma": "no-cache",
-    }
-  }, (err, resp, body) => cb(err, resp, String(body || "")));
-}
+// 定义检测列表 (顺序决定显示顺序)
+const SERVICES = [
+  { name: "Netflix", url: "https://www.netflix.com/title/81215567", hints: ["not available"] },
+  { name: "Disney+", url: "https://www.disneyplus.com/", hints: ["not available in your region", "not available in your location"] },
+  { name: "YouTube Premium", url: "https://www.youtube.com/premium", hints: ["premium is not available", "not available in your country", "not available in your region"] },
+  { name: "Spotify", url: "https://open.spotify.com/", hints: ["spotify is currently not available", "not available in your country"] },
+  { name: "ChatGPT", url: "https://chatgpt.com/", hints: ["access denied", "error 1020"] },
+  { name: "Claude", url: "https://claude.ai/login", hints: ["app unavailable", "credits exhausted"] },
+  { name: "HBO Max", url: "https://www.max.com/", hints: ["not available in your region", "not available in your location"] },
+  { name: "Prime Video", url: "https://www.primevideo.com/", hints: ["not available in your region", "unavailable in your region"] }
+];
 
-function line(name, ok, extra) {
-  return (ok ? "✅ " : "❌ ") + name + (extra ? ` (${extra})` : "");
-}
+function check(item) {
+  return new Promise((resolve) => {
+    $httpClient.get({
+      url: item.url,
+      timeout: TIMEOUT,
+      headers: { "User-Agent": UA }
+    }, (err, resp, body) => {
+      // 1. 网络/请求错误
+      if (err || !resp) return resolve({ name: item.name, ok: false, msg: "Error" });
+      
+      const code = resp.status;
+      const t = (body || "").toLowerCase();
 
-function check(url, hints, cb) {
-  get(url, (e, r, b) => {
-    if (e || !r) return cb(false, "request failed");
-    const code = r.status || 0;
-    const t = b.toLowerCase();
+      // 2. Netflix 特殊逻辑 (Netflix 经常返回 404 但其实是解锁 Originals，只有明确 not available 才算挂)
+      if (item.name === "Netflix") {
+        if (t.includes("not available in your area")) return resolve({ name: item.name, ok: false, msg: "Geo Blocked" });
+        if (code === 403) return resolve({ name: item.name, ok: false, msg: "Forbidden" });
+        // Netflix 404 很多时候是只有自制剧，但也算能看，姑且算 OK，或者你可以标记为 "Originals"
+        return resolve({ name: item.name, ok: true, msg: "" }); 
+      }
 
-    if (code === 403 || t.includes("access denied") || t.includes("forbidden")) return cb(false, "denied");
-    if (code === 451) return cb(false, "unavailable (451)");
+      // 3. 通用状态码拦截
+      if (code === 403) return resolve({ name: item.name, ok: false, msg: "Forbidden" });
+      if (code === 451) return resolve({ name: item.name, ok: false, msg: "Unavailable" });
 
-    if (Array.isArray(hints)) {
-      for (const h of hints) if (h && t.includes(h)) return cb(false, "geo blocked");
-    }
+      // 4. 关键词拦截
+      if (item.hints) {
+        for (const h of item.hints) {
+          if (t.includes(h)) return resolve({ name: item.name, ok: false, msg: "Geo Blocked" });
+        }
+      }
 
-    if (code >= 200 && code < 400) return cb(true, "reachable");
-    if (code === 404) return cb(false, "404");
-    return cb(false, `HTTP ${code}`);
+      // 5. 成功判定
+      if (code >= 200 && code < 400) return resolve({ name: item.name, ok: true, msg: "" });
+      
+      // 6. 其他失败
+      resolve({ name: item.name, ok: false, msg: `HTTP ${code}` });
+    });
   });
 }
 
-const out = [];
+// 并发执行所有检测
+Promise.all(SERVICES.map(check)).then(results => {
+  const lines = results.map(r => {
+    const icon = r.ok ? "✅ " : "❌ ";
+    const extra = r.msg ? ` (${r.msg})` : "";
+    return `${icon}${r.name}${extra}`;
+  });
 
-check("https://www.netflix.com/title/81215567", [], (ok, ex) => {
-  out.push(line("Netflix", ok, ex));
-  check("https://www.disneyplus.com/", ["not available in your region", "not available in your location", "is not available in your region"], (ok2, ex2) => {
-    out.push(line("Disney+", ok2, ex2));
-    check("https://www.youtube.com/premium", ["premium is not available", "not available in your country", "not available in your region"], (ok3, ex3) => {
-      out.push(line("YouTube Premium", ok3, ex3));
-      check("https://open.spotify.com/", ["spotify is currently not available", "not available in your country"], (ok4, ex4) => {
-        out.push(line("Spotify", ok4, ex4));
-        check("https://chatgpt.com/", [], (ok5, ex5) => {
-          out.push(line("ChatGPT", ok5, ex5));
-          check("https://claude.ai/", [], (ok6, ex6) => {
-            out.push(line("Claude", ok6, ex6));
-            check("https://www.max.com/", ["not available in your region", "not available in your location"], (ok7, ex7) => {
-              out.push(line("HBO Max", ok7, ex7));
-              check("https://www.primevideo.com/", ["not available in your region", "not available in your location", "unavailable in your region"], (ok8, ex8) => {
-                out.push(line("Prime Video", ok8, ex8));
-                $done({
-                  title: "Unlock Summary",
-                  content: out.join("\n"),
-                  icon: "https://logo.clearbit.com/chatgpt.com",
-                  url: "https://chatgpt.com"
-                });
-              });
-            });
-          });
-        });
-      });
-    });
+  $done({
+    title: "Unlock Summary",
+    content: lines.join("\n"),
+    icon: "https://logo.clearbit.com/chatgpt.com",
+    url: "https://chatgpt.com"
   });
 });
