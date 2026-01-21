@@ -1,255 +1,152 @@
-#SUBSCRIBED https://raw.githubusercontent.com/StashNetworks/misc/master/collapsed-tiles/collapsed-tiles-example.stoverride
-name: Collapsed Tiles - Unlock Checks (Official-style Mixed v2)
+name: Collapsed Tiles - Unlock Monitor (Hybrid Fixed)
+desc: "混合模式修复版：完美保留官方源 (ChatGPT/Netflix/YouTube)，并修复 Disney+/Spotify/Prime 等内嵌脚本的显示问题。"
 
+# ==========================================
+# 界面配置 (Tiles)
+# ⚠️ 注意：所有图标统一改为在线图片，确保显示一致
+# ==========================================
 tiles:
-  - name: Unlock-Summary
-    title: Unlock Summary
-    icon: checkmark.seal.fill
-    collapsed: true
-    url: https://chatgpt.com
-    interval: 900
-
-  # ✅ 官方示例脚本：url 引用
+  # --- 1. 官方源 (原本能显示的) ---
   - name: ChatGPT-Web-Check
     title: ChatGPT Web
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
     collapsed: true
     url: https://chatgpt.com
-    interval: 900
 
   - name: ChatGPT-App-Check
     title: ChatGPT App
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
     collapsed: true
     url: https://chatgpt.com
-    interval: 900
 
   - name: YouTube-Check
     title: YouTube
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/youtube.png
     collapsed: true
     url: https://www.youtube.com
-    interval: 900
 
   - name: Netflix-Check
     title: Netflix
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/netflix.png
     collapsed: true
     url: https://www.netflix.com
-    interval: 900
 
-  # ⬇️ 新增/补齐：用内嵌 content（注意：Stash 需要 content，不是 payload）
+  # --- 2. 内嵌脚本 (修复缩进后应能显示) ---
   - name: Disney-Check
     title: Disney+
-    icon: sparkles.tv.fill
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png
     collapsed: true
     url: https://www.disneyplus.com
-    interval: 900
-
-  - name: YouTube-Premium-Check
-    title: YouTube Premium
-    icon: play.fill
-    collapsed: true
-    url: https://www.youtube.com/premium
-    interval: 900
 
   - name: Spotify-Check
     title: Spotify
-    icon: music.note
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png
     collapsed: true
     url: https://open.spotify.com
-    interval: 900
 
   - name: Claude-Check
     title: Claude
-    icon: sparkles
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png
     collapsed: true
     url: https://claude.ai
-    interval: 900
 
   - name: HBO-Max-Check
-    title: HBO Max (Max)
-    icon: tv.fill
+    title: HBO Max
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png
     collapsed: true
     url: https://www.max.com
-    interval: 900
 
   - name: PrimeVideo-Check
     title: Prime Video
-    icon: film.fill
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png
     collapsed: true
     url: https://www.primevideo.com
-    interval: 900
 
+# ==========================================
+# 脚本逻辑 (Script Providers)
+# ==========================================
 script-providers:
-  # 汇总：一次性输出所有结果（content）
-  Unlock-Summary:
-    content: |
-      const TIMEOUT = 9000;
-      const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      const LANG = "en-US,en;q=0.9";
-
-      function get(url, cb) {
-        $httpClient.get({
-          url,
-          timeout: TIMEOUT,
-          headers: {
-            "User-Agent": UA,
-            "Accept-Language": LANG,
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-          }
-        }, (err, resp, body) => cb(err, resp, String(body || "")));
-      }
-
-      function line(name, ok, extra) {
-        return (ok ? "✅ " : "❌ ") + name + (extra ? ` (${extra})` : "");
-      }
-
-      function check(url, hints, cb) {
-        get(url, (e, r, b) => {
-          if (e || !r) return cb(false, "request failed");
-          const code = r.status || 0;
-          const t = b.toLowerCase();
-
-          if (code === 403 || t.includes("access denied") || t.includes("forbidden")) return cb(false, "denied");
-          if (code === 451) return cb(false, "unavailable (451)");
-
-          if (Array.isArray(hints)) {
-            for (const h of hints) {
-              if (h && t.includes(h)) return cb(false, "geo blocked");
-            }
-          }
-
-          if (code >= 200 && code < 400) return cb(true, "reachable");
-          if (code === 404) return cb(false, "404");
-          return cb(false, `HTTP ${code}`);
-        });
-      }
-
-      const out = [];
-
-      check("https://www.netflix.com/title/81215567", [], (ok, ex) => {
-        out.push(line("Netflix", ok, ex));
-        check("https://www.disneyplus.com/", ["not available in your region", "not available in your location", "is not available in your region"], (ok2, ex2) => {
-          out.push(line("Disney+", ok2, ex2));
-          check("https://www.youtube.com/premium", ["premium is not available", "not available in your country", "not available in your region"], (ok3, ex3) => {
-            out.push(line("YouTube Premium", ok3, ex3));
-            check("https://open.spotify.com/", ["spotify is currently not available", "not available in your country"], (ok4, ex4) => {
-              out.push(line("Spotify", ok4, ex4));
-              check("https://chatgpt.com/", [], (ok5, ex5) => {
-                out.push(line("ChatGPT", ok5, ex5));
-                check("https://claude.ai/", [], (ok6, ex6) => {
-                  out.push(line("Claude", ok6, ex6));
-                  check("https://www.max.com/", ["not available in your region", "not available in your location"], (ok7, ex7) => {
-                    out.push(line("HBO Max", ok7, ex7));
-                    check("https://www.primevideo.com/", ["not available in your region", "not available in your location", "unavailable in your region"], (ok8, ex8) => {
-                      out.push(line("Prime Video", ok8, ex8));
-                      $done({ title: "Unlock Summary", content: out.join("\n"), icon: "checkmark.seal.fill", url: "https://chatgpt.com" });
-                    });
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-
-  # ✅ 官方示例脚本：url
+  # --- 官方脚本引用 (保持不变) ---
   ChatGPT-Web-Check:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/chatgpt-web.js
+    interval: 86400
   ChatGPT-App-Check:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/chatgpt-app.js
+    interval: 86400
   YouTube-Check:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/youtube.js
+    interval: 86400
   Netflix-Check:
     url: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/script/netflix.js
+    interval: 86400
 
-  # 新增：内嵌 content
+  # --- 内嵌脚本 (已严格修复缩进) ---
   Disney-Check:
+    interval: 86400
     content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://www.disneyplus.com/", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"Disney+", content:"❌ request failed", icon:"sparkles.tv.fill", url:"https://www.disneyplus.com" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        const blocked=t.includes("not available in your region")||t.includes("not available in your location")||t.includes("is not available in your region");
-        if (code===403 || t.includes("access denied") || t.includes("forbidden")) return $done({ title:"Disney+", content:"❌ denied", icon:"sparkles.tv.fill", url:"https://www.disneyplus.com" });
-        if (blocked) return $done({ title:"Disney+", content:`❌ geo blocked (HTTP ${code})`, icon:"sparkles.tv.fill", url:"https://www.disneyplus.com" });
-        if (code>=200 && code<400) return $done({ title:"Disney+", content:`✅ reachable (HTTP ${code})`, icon:"sparkles.tv.fill", url:"https://www.disneyplus.com" });
-        return $done({ title:"Disney+", content:`❌ HTTP ${code}`, icon:"sparkles.tv.fill", url:"https://www.disneyplus.com" });
-      });
-
-  YouTube-Premium-Check:
-    content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://www.youtube.com/premium", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"YouTube Premium", content:"❌ request failed", icon:"play.fill", url:"https://www.youtube.com/premium" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        const blocked=t.includes("premium is not available")||t.includes("not available in your country")||t.includes("not available in your region");
-        if (code===403 || t.includes("access denied") || t.includes("forbidden")) return $done({ title:"YouTube Premium", content:"❌ denied", icon:"play.fill", url:"https://www.youtube.com/premium" });
-        if (blocked) return $done({ title:"YouTube Premium", content:`❌ geo limited (HTTP ${code})`, icon:"play.fill", url:"https://www.youtube.com/premium" });
-        if (code>=200 && code<400) return $done({ title:"YouTube Premium", content:`✅ reachable (HTTP ${code})`, icon:"play.fill", url:"https://www.youtube.com/premium" });
-        return $done({ title:"YouTube Premium", content:`❌ HTTP ${code}`, icon:"play.fill", url:"https://www.youtube.com/premium" });
-      });
+      (function(){
+        const url="https://www.disneyplus.com/";
+        $httpClient.get({url:url, headers:{"User-Agent":"Mozilla/5.0"}, timeout:5000}, (e,r,b)=>{
+          const icon="https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png";
+          if(e||!r) return $done({title:"Disney+", content:"Error", icon:icon});
+          const t=String(b).toLowerCase();
+          if(r.status===200 && !t.includes("not available in your region")) $done({title:"Disney+", content:"Unlocked", icon:icon});
+          else $done({title:"Disney+", content:"Blocked", icon:icon});
+        });
+      })();
 
   Spotify-Check:
+    interval: 86400
     content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://open.spotify.com/", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"Spotify", content:"❌ request failed", icon:"music.note", url:"https://open.spotify.com" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        const blocked=t.includes("spotify is currently not available")||t.includes("not available in your country");
-        if (code===403 || t.includes("access denied") || t.includes("forbidden")) return $done({ title:"Spotify", content:"❌ denied", icon:"music.note", url:"https://open.spotify.com" });
-        if (blocked) return $done({ title:"Spotify", content:`❌ geo blocked (HTTP ${code})`, icon:"music.note", url:"https://open.spotify.com" });
-        if (code>=200 && code<400) return $done({ title:"Spotify", content:`✅ reachable (HTTP ${code})`, icon:"music.note", url:"https://open.spotify.com" });
-        return $done({ title:"Spotify", content:`❌ HTTP ${code}`, icon:"music.note", url:"https://open.spotify.com" });
-      });
+      (function(){
+        const url="https://open.spotify.com";
+        $httpClient.get({url:url, headers:{"User-Agent":"Mozilla/5.0"}, timeout:5000}, (e,r,b)=>{
+          const icon="https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png";
+          if(e||!r) return $done({title:"Spotify", content:"Error", icon:icon});
+          const t=String(b).toLowerCase();
+          if(r.status===200 && !t.includes("not available")) $done({title:"Spotify", content:"Unlocked", icon:icon});
+          else $done({title:"Spotify", content:"Blocked", icon:icon});
+        });
+      })();
 
   Claude-Check:
+    interval: 86400
     content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://claude.ai/", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"Claude", content:"❌ request failed", icon:"sparkles", url:"https://claude.ai" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        if (code===403 || t.includes("access denied") || t.includes("forbidden")) return $done({ title:"Claude", content:"❌ denied", icon:"sparkles", url:"https://claude.ai" });
-        if (code>=200 && code<400) return $done({ title:"Claude", content:`✅ reachable (HTTP ${code})`, icon:"sparkles", url:"https://claude.ai" });
-        return $done({ title:"Claude", content:`❌ HTTP ${code}`, icon:"sparkles", url:"https://claude.ai" });
-      });
+      (function(){
+        const url="https://claude.ai/login";
+        $httpClient.get({url:url, headers:{"User-Agent":"Mozilla/5.0"}, timeout:5000}, (e,r,b)=>{
+          const icon="https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png";
+          if(e||!r) return $done({title:"Claude", content:"Error", icon:icon});
+          const t=String(b).toLowerCase();
+          if(r.status===200 && !t.includes("app unavailable") && r.status!==403) $done({title:"Claude", content:"Unlocked", icon:icon});
+          else $done({title:"Claude", content:"Blocked", icon:icon});
+        });
+      })();
 
   HBO-Max-Check:
+    interval: 86400
     content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://www.max.com/", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"HBO Max", content:"❌ request failed", icon:"tv.fill", url:"https://www.max.com" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        const blocked=t.includes("not available in your region")||t.includes("not available in your location")||(t.includes("not available")&&t.includes("region"));
-        if (code===403 || t.includes("access denied") || t.includes("forbidden")) return $done({ title:"HBO Max", content:"❌ denied", icon:"tv.fill", url:"https://www.max.com" });
-        if (blocked) return $done({ title:"HBO Max", content:`❌ geo blocked (HTTP ${code})`, icon:"tv.fill", url:"https://www.max.com" });
-        if (code>=200 && code<400) return $done({ title:"HBO Max", content:`✅ reachable (HTTP ${code})`, icon:"tv.fill", url:"https://www.max.com" });
-        return $done({ title:"HBO Max", content:`❌ HTTP ${code}`, icon:"tv.fill", url:"https://www.max.com" });
-      });
+      (function(){
+        const url="https://www.max.com/";
+        $httpClient.get({url:url, headers:{"User-Agent":"Mozilla/5.0"}, timeout:5000}, (e,r,b)=>{
+          const icon="https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png";
+          if(e||!r) return $done({title:"HBO Max", content:"Error", icon:icon});
+          const t=String(b).toLowerCase();
+          if(r.status===200 && !t.includes("not available")) $done({title:"HBO Max", content:"Unlocked", icon:icon});
+          else $done({title:"HBO Max", content:"Blocked", icon:icon});
+        });
+      })();
 
   PrimeVideo-Check:
+    interval: 86400
     content: |
-      const TIMEOUT=9000;
-      const UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-      $httpClient.get({ url:"https://www.primevideo.com/", timeout:TIMEOUT, headers:{ "User-Agent":UA, "Accept-Language":"en-US,en;q=0.9", "Cache-Control":"no-cache" } }, (err, resp, body) => {
-        if (err || !resp) return $done({ title:"Prime Video", content:"❌ request failed", icon:"film.fill", url:"https://www.primevideo.com" });
-        const code=resp.status||0;
-        const t=String(body||"").toLowerCase();
-        const blocked=t.includes("not available in your location")||t.includes("not available in your region")||t.includes("unavailable in your region")||t.includes("access denied")||t.includes("forbidden");
-        if (code===403) return $done({ title:"Prime Video", content:"❌ denied (403)", icon:"film.fill", url:"https://www.primevideo.com" });
-        if (blocked) return $done({ title:"Prime Video", content:`❌ geo blocked/denied (HTTP ${code})`, icon:"film.fill", url:"https://www.primevideo.com" });
-        if (code>=200 && code<400) return $done({ title:"Prime Video", content:`✅ reachable (HTTP ${code})`, icon:"film.fill", url:"https://www.primevideo.com" });
-        return $done({ title:"Prime Video", content:`❌ HTTP ${code}`, icon:"film.fill", url:"https://www.primevideo.com" });
-      });
+      (function(){
+        const url="https://www.primevideo.com/";
+        $httpClient.get({url:url, headers:{"User-Agent":"Mozilla/5.0"}, timeout:5000}, (e,r,b)=>{
+          const icon="https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png";
+          if(e||!r) return $done({title:"Prime Video", content:"Error", icon:icon});
+          const t=String(b).toLowerCase();
+          if(r.status===200 && !t.includes("not available") && !t.includes("unavailable")) $done({title:"Prime Video", content:"Unlocked", icon:icon});
+          else $done({title:"Prime Video", content:"Blocked", icon:icon});
+        });
+      })();
