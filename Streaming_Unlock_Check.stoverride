@@ -1,73 +1,62 @@
-name: "Collapsed Tiles - Unlock Monitor (Pro)"
-desc: "基于官方范例重构：集成 Netflix / YouTube / Disney+ / Spotify / ChatGPT / Claude / HBO / Prime 解锁检测"
+name: "Collapsed Tiles - Unlock Monitor (Final)"
+desc: "严格参照范例修复：移除多余字段，使用在线图标，修复空白面板问题。"
 icon: "checklist"
 
 # ==========================================
 # 界面配置 (Tiles)
-# 说明：
-# 1. name 必须与下方 script-providers 里的名称完全一致
-# 2. url 是点击图标后的跳转地址，缺少此字段可能导致面板不显示
+# ⚠️ 注意：此处严禁添加 content 或 argument 字段
 # ==========================================
 tiles:
   - name: Netflix-Check
-    title: "Netflix"
-    content: "Tap to refresh"
-    icon: "play.rectangle.fill"
+    title: Netflix
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png
     collapsed: true
-    url: "https://www.netflix.com"
+    url: https://www.netflix.com
 
   - name: YouTube-Check
-    title: "YouTube Premium"
-    content: "Tap to refresh"
-    icon: "play.fill"
+    title: YouTube
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png
     collapsed: true
-    url: "https://www.youtube.com/premium"
+    url: https://www.youtube.com/premium
 
   - name: Disney-Check
-    title: "Disney+"
-    content: "Tap to refresh"
-    icon: "sparkles.tv.fill"
+    title: Disney+
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png
     collapsed: true
-    url: "https://www.disneyplus.com"
+    url: https://www.disneyplus.com
 
   - name: Spotify-Check
-    title: "Spotify"
-    content: "Tap to refresh"
-    icon: "music.note"
+    title: Spotify
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png
     collapsed: true
-    url: "https://open.spotify.com"
+    url: https://open.spotify.com
 
-  - name: ChatGPT-Web-Check
-    title: "ChatGPT"
-    content: "Tap to refresh"
-    icon: "bubble.left.and.bubble.right.fill"
+  - name: ChatGPT-Check
+    title: ChatGPT
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png
     collapsed: true
-    url: "https://chatgpt.com"
+    url: https://chatgpt.com
 
   - name: Claude-Check
-    title: "Claude AI"
-    content: "Tap to refresh"
-    icon: "sparkles"
+    title: Claude
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png
     collapsed: true
-    url: "https://claude.ai"
+    url: https://claude.ai
 
   - name: HBO-Check
-    title: "HBO Max"
-    content: "Tap to refresh"
-    icon: "tv.fill"
+    title: HBO Max
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png
     collapsed: true
-    url: "https://www.max.com"
+    url: https://www.max.com
 
   - name: Prime-Check
-    title: "Prime Video"
-    content: "Tap to refresh"
-    icon: "film.fill"
+    title: Prime Video
+    icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png
     collapsed: true
-    url: "https://www.primevideo.com"
+    url: https://www.primevideo.com
 
 # ==========================================
 # 脚本逻辑 (Script Providers)
-# 说明：使用 content 内嵌方式，无需依赖外部网络请求 js 文件
 # ==========================================
 script-providers:
   Netflix-Check:
@@ -76,15 +65,15 @@ script-providers:
       const url = "https://www.netflix.com/title/81215567";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "Netflix", content: "⚠️ Error", icon: "play.rectangle.fill" });
+          $done({ title: "Netflix", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
           return;
         }
         if (resp.status === 200) {
-          $done({ title: "Netflix", content: "✅ Unlocked", icon: "play.rectangle.fill" });
+          $done({ title: "Netflix", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
         } else if (resp.status === 404) {
-          $done({ title: "Netflix", content: "❌ Original Only", icon: "play.rectangle.fill" });
+          $done({ title: "Netflix", content: "❌ Original Only", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
         } else {
-          $done({ title: "Netflix", content: "❌ Blocked", icon: "play.rectangle.fill" });
+          $done({ title: "Netflix", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
         }
       });
 
@@ -94,15 +83,14 @@ script-providers:
       const url = "https://www.youtube.com/premium";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "YouTube", content: "⚠️ Error", icon: "play.fill" });
+          $done({ title: "YouTube", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
           return;
         }
         const t = String(body || "").toLowerCase();
-        // 检查 Premium 是否可用
         if (resp.status >= 200 && resp.status < 400 && !t.includes("not available")) {
-          $done({ title: "YouTube", content: "✅ Premium", icon: "play.fill" });
+          $done({ title: "YouTube", content: "✅ Premium", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
         } else {
-          $done({ title: "YouTube", content: "❌ Geo Locked", icon: "play.fill" });
+          $done({ title: "YouTube", content: "❌ Geo Locked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
         }
       });
 
@@ -112,50 +100,49 @@ script-providers:
       const url = "https://www.disneyplus.com/";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "Disney+", content: "⚠️ Error", icon: "sparkles.tv.fill" });
+          $done({ title: "Disney+", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
           return;
         }
         const t = String(body || "").toLowerCase();
         if (resp.status === 200 && !t.includes("not available in your region")) {
-          $done({ title: "Disney+", content: "✅ Unlocked", icon: "sparkles.tv.fill" });
+          $done({ title: "Disney+", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
         } else {
-          $done({ title: "Disney+", content: "❌ Blocked", icon: "sparkles.tv.fill" });
+          $done({ title: "Disney+", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
         }
       });
 
   Spotify-Check:
     interval: 86400
     content: |
-      // 使用 Google Cache 页面检测账户注册区域限制
       const url = "https://open.spotify.com";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "Spotify", content: "⚠️ Error", icon: "music.note" });
+          $done({ title: "Spotify", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
           return;
         }
         const t = String(body || "").toLowerCase();
         if (resp.status === 200 && !t.includes("not available")) {
-          $done({ title: "Spotify", content: "✅ Unlocked", icon: "music.note" });
+          $done({ title: "Spotify", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
         } else {
-          $done({ title: "Spotify", content: "❌ Blocked", icon: "music.note" });
+          $done({ title: "Spotify", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
         }
       });
 
-  ChatGPT-Web-Check:
+  ChatGPT-Check:
     interval: 86400
     content: |
       const url = "https://chatgpt.com/";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "ChatGPT", content: "⚠️ Error", icon: "bubble.left.and.bubble.right.fill" });
+          $done({ title: "ChatGPT", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
           return;
         }
         if (resp.status === 403) {
-           $done({ title: "ChatGPT", content: "❌ Blocked (403)", icon: "bubble.left.and.bubble.right.fill" });
+           $done({ title: "ChatGPT", content: "❌ Blocked (403)", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
         } else if (resp.status >= 200 && resp.status < 400) {
-           $done({ title: "ChatGPT", content: "✅ Reachable", icon: "bubble.left.and.bubble.right.fill" });
+           $done({ title: "ChatGPT", content: "✅ Reachable", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
         } else {
-           $done({ title: "ChatGPT", content: `❌ HTTP ${resp.status}`, icon: "bubble.left.and.bubble.right.fill" });
+           $done({ title: "ChatGPT", content: `❌ HTTP ${resp.status}`, icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
         }
       });
 
@@ -165,14 +152,14 @@ script-providers:
       const url = "https://claude.ai/login";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "Claude", content: "⚠️ Error", icon: "sparkles" });
+          $done({ title: "Claude", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
           return;
         }
         const t = String(body || "").toLowerCase();
         if (resp.status === 403 || t.includes("app unavailable")) {
-          $done({ title: "Claude", content: "❌ Geo Blocked", icon: "sparkles" });
+          $done({ title: "Claude", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
         } else {
-          $done({ title: "Claude", content: "✅ Reachable", icon: "sparkles" });
+          $done({ title: "Claude", content: "✅ Reachable", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
         }
       });
 
@@ -182,14 +169,14 @@ script-providers:
       const url = "https://www.max.com/";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-           $done({ title: "HBO Max", content: "⚠️ Error", icon: "tv.fill" });
+           $done({ title: "HBO Max", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
            return;
         }
         const t = String(body || "").toLowerCase();
         if (resp.status === 200 && !t.includes("not available")) {
-           $done({ title: "HBO Max", content: "✅ Unlocked", icon: "tv.fill" });
+           $done({ title: "HBO Max", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
         } else {
-           $done({ title: "HBO Max", content: "❌ Geo Blocked", icon: "tv.fill" });
+           $done({ title: "HBO Max", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
         }
       });
 
@@ -199,14 +186,14 @@ script-providers:
       const url = "https://www.primevideo.com/";
       $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
         if (err || !resp) {
-          $done({ title: "Prime Video", content: "⚠️ Error", icon: "film.fill" });
+          $done({ title: "Prime Video", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
           return;
         }
         const t = String(body || "").toLowerCase();
         const blocked = t.includes("not available") || t.includes("unavailable in your region");
         if (resp.status === 200 && !blocked) {
-          $done({ title: "Prime Video", content: "✅ Unlocked", icon: "film.fill" });
+          $done({ title: "Prime Video", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
         } else {
-          $done({ title: "Prime Video", content: "❌ Geo Blocked", icon: "film.fill" });
+          $done({ title: "Prime Video", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
         }
       });
