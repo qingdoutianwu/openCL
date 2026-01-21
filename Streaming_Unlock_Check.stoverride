@@ -1,10 +1,11 @@
-name: Collapsed Tiles - Unlock Checks (Extended)
-desc: 基于 Stash Collapsed Tiles 风格：Netflix / Disney / ChatGPT + 集成 YouTube Premium / Spotify / Claude / HBO Max / Prime Video 解锁检测
+name: Collapsed Tiles - Unlock Checks (Fixed)
+desc: 修复版：Netflix / Disney / ChatGPT + 集成 YouTube Premium / Spotify / Claude / HBO Max / Prime Video 解锁检测
 icon: checkmark.seal.fill
 
 # 说明：
-# - collapsed: true -> 显示在“第三方服务”面板（折叠 Tile）
-# - 逐节点检测：在代理列表长按某节点查看详情时，脚本请求会走该节点
+# - 修复了 script-providers 关键字错误 (payload -> content)
+# - 修复了 JS 语法括号闭合问题
+# - 修复了 Spotify 检测地址
 
 tiles:
   - name: summary
@@ -73,7 +74,7 @@ tiles:
 script-providers:
   summary:
     interval: 86400
-    payload: |
+    content: |
       const TIMEOUT = 8000;
       const LANG = "en-US,en;q=0.9";
       function get(url, cb) {
@@ -132,7 +133,6 @@ script-providers:
         get("https://claude.ai/login", (e,r,b)=>{
           if(e||!r) return cb(false,"Claude: err");
           const t=b.toLowerCase();
-          // Claude 封锁通常表现为 403 或页面包含 App unavailable
           if(r.status===403 || t.includes("app unavailable")) return cb(false,"Claude (geo)");
           if(r.status>=200 && r.status<400) return cb(true,"Claude");
           return cb(false,`Claude (${r.status})`);
@@ -161,7 +161,6 @@ script-providers:
       }
 
       const out = [];
-      // 修复了下方的闭合括号数量
       chkNetflix((ok, msg)=>{ out.push(mark(ok,msg));
         chkDisney((ok2, msg2)=>{ out.push(mark(ok2,msg2));
           chkYouTube((ok3, msg3)=>{ out.push(mark(ok3,msg3));
@@ -182,7 +181,7 @@ script-providers:
 
   netflix:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.netflix.com/title/81215567", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Netflix", content: "⚠️ request failed", icon: "play.rectangle.fill" });
         if (resp.status === 200) return $done({ title: "Netflix", content: "✅ unlocked", icon: "play.rectangle.fill" });
@@ -192,7 +191,7 @@ script-providers:
 
   disney:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.disneyplus.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Disney+", content: "⚠️ request failed", icon: "sparkles.tv.fill" });
         const t = String(body || "").toLowerCase();
@@ -204,7 +203,7 @@ script-providers:
 
   youtube:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.youtube.com/premium", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "YouTube Premium", content: "⚠️ request failed", icon: "play.fill" });
         const t = String(body || "").toLowerCase();
@@ -216,7 +215,7 @@ script-providers:
 
   spotify:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.spotify.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Spotify", content: "⚠️ request failed", icon: "music.note" });
         const t = String(body || "").toLowerCase();
@@ -228,7 +227,7 @@ script-providers:
 
   chatgpt:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://chatgpt.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "ChatGPT", content: "⚠️ request failed", icon: "bubble.left.and.bubble.right.fill" });
         if (resp.status >= 200 && resp.status < 400) return $done({ title: "ChatGPT", content: "✅ reachable", icon: "bubble.left.and.bubble.right.fill" });
@@ -237,7 +236,7 @@ script-providers:
 
   claude:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://claude.ai/login", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Claude", content: "⚠️ request failed", icon: "sparkles" });
         const t = String(body || "").toLowerCase();
@@ -248,7 +247,7 @@ script-providers:
 
   hbo:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.max.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "HBO Max", content: "⚠️ request failed", icon: "tv.fill" });
         const t = String(body || "").toLowerCase();
@@ -260,7 +259,7 @@ script-providers:
 
   prime:
     interval: 86400
-    payload: |
+    content: |
       $httpClient.get({ url: "https://www.primevideo.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Prime Video", content: "⚠️ request failed", icon: "film.fill" });
         const t = String(body || "").toLowerCase();
