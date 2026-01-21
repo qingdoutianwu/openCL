@@ -1,10 +1,9 @@
-name: "Collapsed Tiles - Unlock Monitor (Final)"
-desc: "严格参照范例修复：移除多余字段，使用在线图标，修复空白面板问题。"
+name: "Collapsed Tiles - Unlock Monitor (Fixed)"
+desc: "修复了变量冲突导致的脚本崩溃问题，界面与成功范例保持一致。"
 icon: "checklist"
 
 # ==========================================
 # 界面配置 (Tiles)
-# ⚠️ 注意：此处严禁添加 content 或 argument 字段
 # ==========================================
 tiles:
   - name: Netflix-Check
@@ -57,143 +56,168 @@ tiles:
 
 # ==========================================
 # 脚本逻辑 (Script Providers)
+# 关键修复：所有变量改用 var 或移除 const，防止重声明报错
 # ==========================================
 script-providers:
   Netflix-Check:
     interval: 86400
     content: |
-      const url = "https://www.netflix.com/title/81215567";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "Netflix", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
-          return;
-        }
-        if (resp.status === 200) {
-          $done({ title: "Netflix", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
-        } else if (resp.status === 404) {
-          $done({ title: "Netflix", content: "❌ Original Only", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
-        } else {
-          $done({ title: "Netflix", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png" });
-        }
-      });
+      (function(){
+        var url = "https://www.netflix.com/title/81215567";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Netflix.png";
+          if (err || !resp) {
+            $done({ title: "Netflix", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          if (resp.status === 200) {
+            $done({ title: "Netflix", content: "✅ Unlocked", icon: icon });
+          } else if (resp.status === 404) {
+            $done({ title: "Netflix", content: "❌ Original Only", icon: icon });
+          } else {
+            $done({ title: "Netflix", content: "❌ Blocked", icon: icon });
+          }
+        });
+      })();
 
   YouTube-Check:
     interval: 86400
     content: |
-      const url = "https://www.youtube.com/premium";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "YouTube", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
-          return;
-        }
-        const t = String(body || "").toLowerCase();
-        if (resp.status >= 200 && resp.status < 400 && !t.includes("not available")) {
-          $done({ title: "YouTube", content: "✅ Premium", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
-        } else {
-          $done({ title: "YouTube", content: "❌ Geo Locked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png" });
-        }
-      });
+      (function(){
+        var url = "https://www.youtube.com/premium";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png";
+          if (err || !resp) {
+            $done({ title: "YouTube", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          var t = String(body || "").toLowerCase();
+          if (resp.status >= 200 && resp.status < 400 && !t.includes("not available")) {
+            $done({ title: "YouTube", content: "✅ Premium", icon: icon });
+          } else {
+            $done({ title: "YouTube", content: "❌ Geo Locked", icon: icon });
+          }
+        });
+      })();
 
   Disney-Check:
     interval: 86400
     content: |
-      const url = "https://www.disneyplus.com/";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "Disney+", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
-          return;
-        }
-        const t = String(body || "").toLowerCase();
-        if (resp.status === 200 && !t.includes("not available in your region")) {
-          $done({ title: "Disney+", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
-        } else {
-          $done({ title: "Disney+", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png" });
-        }
-      });
+      (function(){
+        var url = "https://www.disneyplus.com/";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Disney+.png";
+          if (err || !resp) {
+            $done({ title: "Disney+", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          var t = String(body || "").toLowerCase();
+          if (resp.status === 200 && !t.includes("not available in your region")) {
+            $done({ title: "Disney+", content: "✅ Unlocked", icon: icon });
+          } else {
+            $done({ title: "Disney+", content: "❌ Blocked", icon: icon });
+          }
+        });
+      })();
 
   Spotify-Check:
     interval: 86400
     content: |
-      const url = "https://open.spotify.com";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "Spotify", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
-          return;
-        }
-        const t = String(body || "").toLowerCase();
-        if (resp.status === 200 && !t.includes("not available")) {
-          $done({ title: "Spotify", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
-        } else {
-          $done({ title: "Spotify", content: "❌ Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png" });
-        }
-      });
+      (function(){
+        var url = "https://open.spotify.com";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Spotify.png";
+          if (err || !resp) {
+            $done({ title: "Spotify", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          var t = String(body || "").toLowerCase();
+          if (resp.status === 200 && !t.includes("not available")) {
+            $done({ title: "Spotify", content: "✅ Unlocked", icon: icon });
+          } else {
+            $done({ title: "Spotify", content: "❌ Blocked", icon: icon });
+          }
+        });
+      })();
 
   ChatGPT-Check:
     interval: 86400
     content: |
-      const url = "https://chatgpt.com/";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "ChatGPT", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
-          return;
-        }
-        if (resp.status === 403) {
-           $done({ title: "ChatGPT", content: "❌ Blocked (403)", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
-        } else if (resp.status >= 200 && resp.status < 400) {
-           $done({ title: "ChatGPT", content: "✅ Reachable", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
-        } else {
-           $done({ title: "ChatGPT", content: `❌ HTTP ${resp.status}`, icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png" });
-        }
-      });
+      (function(){
+        var url = "https://chatgpt.com/";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/ChatGPT.png";
+          if (err || !resp) {
+            $done({ title: "ChatGPT", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          if (resp.status === 403) {
+             $done({ title: "ChatGPT", content: "❌ Blocked (403)", icon: icon });
+          } else if (resp.status >= 200 && resp.status < 400) {
+             $done({ title: "ChatGPT", content: "✅ Reachable", icon: icon });
+          } else {
+             $done({ title: "ChatGPT", content: `❌ HTTP ${resp.status}`, icon: icon });
+          }
+        });
+      })();
 
   Claude-Check:
     interval: 86400
     content: |
-      const url = "https://claude.ai/login";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "Claude", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
-          return;
-        }
-        const t = String(body || "").toLowerCase();
-        if (resp.status === 403 || t.includes("app unavailable")) {
-          $done({ title: "Claude", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
-        } else {
-          $done({ title: "Claude", content: "✅ Reachable", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png" });
-        }
-      });
+      (function(){
+        var url = "https://claude.ai/login";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Claude.png";
+          if (err || !resp) {
+            $done({ title: "Claude", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          var t = String(body || "").toLowerCase();
+          if (resp.status === 403 || t.includes("app unavailable")) {
+            $done({ title: "Claude", content: "❌ Geo Blocked", icon: icon });
+          } else {
+            $done({ title: "Claude", content: "✅ Reachable", icon: icon });
+          }
+        });
+      })();
 
   HBO-Check:
     interval: 86400
     content: |
-      const url = "https://www.max.com/";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-           $done({ title: "HBO Max", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
-           return;
-        }
-        const t = String(body || "").toLowerCase();
-        if (resp.status === 200 && !t.includes("not available")) {
-           $done({ title: "HBO Max", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
-        } else {
-           $done({ title: "HBO Max", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png" });
-        }
-      });
+      (function(){
+        var url = "https://www.max.com/";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/HBO_Max.png";
+          if (err || !resp) {
+             $done({ title: "HBO Max", content: "⚠️ Error", icon: icon });
+             return;
+          }
+          var t = String(body || "").toLowerCase();
+          if (resp.status === 200 && !t.includes("not available")) {
+             $done({ title: "HBO Max", content: "✅ Unlocked", icon: icon });
+          } else {
+             $done({ title: "HBO Max", content: "❌ Geo Blocked", icon: icon });
+          }
+        });
+      })();
 
   Prime-Check:
     interval: 86400
     content: |
-      const url = "https://www.primevideo.com/";
-      $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
-        if (err || !resp) {
-          $done({ title: "Prime Video", content: "⚠️ Error", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
-          return;
-        }
-        const t = String(body || "").toLowerCase();
-        const blocked = t.includes("not available") || t.includes("unavailable in your region");
-        if (resp.status === 200 && !blocked) {
-          $done({ title: "Prime Video", content: "✅ Unlocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
-        } else {
-          $done({ title: "Prime Video", content: "❌ Geo Blocked", icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png" });
-        }
-      });
+      (function(){
+        var url = "https://www.primevideo.com/";
+        $httpClient.get({ url: url, headers: { "User-Agent": "Mozilla/5.0" }, timeout: 5000 }, (err, resp, body) => {
+          var icon = "https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Amazon_Prime_Video.png";
+          if (err || !resp) {
+            $done({ title: "Prime Video", content: "⚠️ Error", icon: icon });
+            return;
+          }
+          var t = String(body || "").toLowerCase();
+          var blocked = t.includes("not available") || t.includes("unavailable in your region");
+          if (resp.status === 200 && !blocked) {
+            $done({ title: "Prime Video", content: "✅ Unlocked", icon: icon });
+          } else {
+            $done({ title: "Prime Video", content: "❌ Geo Blocked", icon: icon });
+          }
+        });
+      })();
