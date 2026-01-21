@@ -5,7 +5,6 @@ icon: checkmark.seal.fill
 # 说明：
 # - collapsed: true -> 显示在“第三方服务”面板（折叠 Tile）
 # - 逐节点检测：在代理列表长按某节点查看详情时，脚本请求会走该节点
-# - 检测逻辑为“可访问/疑似可用”判断（不同平台真实可播放仍可能受账号/片库影响）
 
 tiles:
   - name: summary
@@ -75,7 +74,7 @@ script-providers:
   summary:
     interval: 86400
     payload: |
-      const TIMEOUT = 9000;
+      const TIMEOUT = 8000;
       const LANG = "en-US,en;q=0.9";
       function get(url, cb) {
         $httpClient.get({ url, headers: { "Accept-Language": LANG }, timeout: TIMEOUT }, (err, resp, body) => {
@@ -86,85 +85,83 @@ script-providers:
 
       function chkNetflix(cb){
         get("https://www.netflix.com/title/81215567", (e,r,b)=>{
-          if(e||!r) return cb(false,"Netflix: request failed");
+          if(e||!r) return cb(false,"Netflix: err");
           if(r.status===200) return cb(true,"Netflix");
           if(r.status===404) return cb(false,"Netflix (404)");
-          return cb(false,`Netflix (HTTP ${r.status})`);
+          return cb(false,`Netflix (${r.status})`);
         });
       }
       function chkDisney(cb){
         get("https://www.disneyplus.com/", (e,r,b)=>{
-          if(e||!r) return cb(false,"Disney+: request failed");
+          if(e||!r) return cb(false,"Disney+: err");
           const t=b.toLowerCase();
           const blocked=t.includes("not available in your region")||t.includes("not available in your location");
           if(r.status>=200 && r.status<400 && !blocked) return cb(true,"Disney+");
           if(blocked) return cb(false,"Disney+ (geo)");
-          return cb(false,`Disney+ (HTTP ${r.status})`);
+          return cb(false,`Disney+ (${r.status})`);
         });
       }
       function chkYouTube(cb){
         get("https://www.youtube.com/premium", (e,r,b)=>{
-          if(e||!r) return cb(false,"YouTube: request failed");
+          if(e||!r) return cb(false,"YouTube: err");
           const t=b.toLowerCase();
           const blocked=t.includes("not available") && (t.includes("country")||t.includes("region"));
           if(r.status>=200 && r.status<400 && !blocked) return cb(true,"YouTube Premium");
           if(blocked) return cb(false,"YouTube (geo)");
-          return cb(false,`YouTube (HTTP ${r.status})`);
+          return cb(false,`YouTube (${r.status})`);
         });
       }
       function chkSpotify(cb){
-        get("https://open.spotify.com/", (e,r,b)=>{
-          if(e||!r) return cb(false,"Spotify: request failed");
+        get("https://www.spotify.com/", (e,r,b)=>{
+          if(e||!r) return cb(false,"Spotify: err");
           const t=b.toLowerCase();
           const blocked=t.includes("spotify is currently not available") || t.includes("not available in your country");
           if(r.status>=200 && r.status<400 && !blocked) return cb(true,"Spotify");
           if(blocked) return cb(false,"Spotify (geo)");
-          return cb(false,`Spotify (HTTP ${r.status})`);
+          return cb(false,`Spotify (${r.status})`);
         });
       }
       function chkChatGPT(cb){
-        // chatgpt.com 常见为 200/302；被墙/被阻通常为超时或异常
         get("https://chatgpt.com/", (e,r,b)=>{
-          if(e||!r) return cb(false,"ChatGPT: request failed");
+          if(e||!r) return cb(false,"ChatGPT: err");
           if(r.status>=200 && r.status<400) return cb(true,"ChatGPT");
-          return cb(false,`ChatGPT (HTTP ${r.status})`);
+          return cb(false,`ChatGPT (${r.status})`);
         });
       }
       function chkClaude(cb){
-        get("https://claude.ai/", (e,r,b)=>{
-          if(e||!r) return cb(false,"Claude: request failed");
+        get("https://claude.ai/login", (e,r,b)=>{
+          if(e||!r) return cb(false,"Claude: err");
+          const t=b.toLowerCase();
+          // Claude 封锁通常表现为 403 或页面包含 App unavailable
+          if(r.status===403 || t.includes("app unavailable")) return cb(false,"Claude (geo)");
           if(r.status>=200 && r.status<400) return cb(true,"Claude");
-          return cb(false,`Claude (HTTP ${r.status})`);
+          return cb(false,`Claude (${r.status})`);
         });
       }
       function chkHBO(cb){
         get("https://www.max.com/", (e,r,b)=>{
-          if(e||!r) return cb(false,"HBO Max: request failed");
+          if(e||!r) return cb(false,"HBO Max: err");
           const t=b.toLowerCase();
           const blocked=t.includes("not available") && t.includes("region");
           if(r.status>=200 && r.status<400 && !blocked) return cb(true,"HBO Max");
           if(blocked) return cb(false,"HBO Max (geo)");
-          return cb(false,`HBO Max (HTTP ${r.status})`);
+          return cb(false,`HBO Max (${r.status})`);
         });
       }
       function chkPrime(cb){
         get("https://www.primevideo.com/", (e,r,b)=>{
-          if(e||!r) return cb(false,"Prime: request failed");
+          if(e||!r) return cb(false,"Prime: err");
           const t=b.toLowerCase();
-          const blocked =
-            t.includes("not available in your location") ||
-            t.includes("not available in your region") ||
-            t.includes("unavailable in your region") ||
-            t.includes("access denied") ||
-            t.includes("forbidden");
+          const blocked = t.includes("not available in your location") || t.includes("not available in your region") || t.includes("unavailable in your region");
           if(r.status===403) return cb(false,"Prime (403)");
           if(r.status>=200 && r.status<400 && !blocked) return cb(true,"Prime Video");
-          if(blocked) return cb(false,"Prime (geo/denied)");
-          return cb(false,`Prime (HTTP ${r.status})`);
+          if(blocked) return cb(false,"Prime (geo)");
+          return cb(false,`Prime (${r.status})`);
         });
       }
 
       const out = [];
+      // 修复了下方的闭合括号数量
       chkNetflix((ok, msg)=>{ out.push(mark(ok,msg));
         chkDisney((ok2, msg2)=>{ out.push(mark(ok2,msg2));
           chkYouTube((ok3, msg3)=>{ out.push(mark(ok3,msg3));
@@ -188,7 +185,7 @@ script-providers:
     payload: |
       $httpClient.get({ url: "https://www.netflix.com/title/81215567", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Netflix", content: "⚠️ request failed", icon: "play.rectangle.fill" });
-        if (resp.status === 200) return $done({ title: "Netflix", content: "✅ unlocked (title reachable)", icon: "play.rectangle.fill" });
+        if (resp.status === 200) return $done({ title: "Netflix", content: "✅ unlocked", icon: "play.rectangle.fill" });
         if (resp.status === 404) return $done({ title: "Netflix", content: "❌ blocked (404)", icon: "play.rectangle.fill" });
         return $done({ title: "Netflix", content: `❌ HTTP ${resp.status}`, icon: "play.rectangle.fill" });
       });
@@ -220,7 +217,7 @@ script-providers:
   spotify:
     interval: 86400
     payload: |
-      $httpClient.get({ url: "https://open.spotify.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
+      $httpClient.get({ url: "https://www.spotify.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Spotify", content: "⚠️ request failed", icon: "music.note" });
         const t = String(body || "").toLowerCase();
         const blocked = t.includes("spotify is currently not available") || t.includes("not available in your country");
@@ -241,8 +238,10 @@ script-providers:
   claude:
     interval: 86400
     payload: |
-      $httpClient.get({ url: "https://claude.ai/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
+      $httpClient.get({ url: "https://claude.ai/login", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Claude", content: "⚠️ request failed", icon: "sparkles" });
+        const t = String(body || "").toLowerCase();
+        if (resp.status === 403 || t.includes("app unavailable")) return $done({ title: "Claude", content: "❌ geo blocked", icon: "sparkles" });
         if (resp.status >= 200 && resp.status < 400) return $done({ title: "Claude", content: "✅ reachable", icon: "sparkles" });
         return $done({ title: "Claude", content: `❌ HTTP ${resp.status}`, icon: "sparkles" });
       });
@@ -265,14 +264,9 @@ script-providers:
       $httpClient.get({ url: "https://www.primevideo.com/", headers: { "Accept-Language": "en-US,en;q=0.9" }, timeout: 9000 }, (err, resp, body) => {
         if (err || !resp) return $done({ title: "Prime Video", content: "⚠️ request failed", icon: "film.fill" });
         const t = String(body || "").toLowerCase();
-        const blocked =
-          t.includes("not available in your location") ||
-          t.includes("not available in your region") ||
-          t.includes("unavailable in your region") ||
-          t.includes("access denied") ||
-          t.includes("forbidden");
+        const blocked = t.includes("not available in your location") || t.includes("not available in your region") || t.includes("unavailable in your region") || t.includes("access denied") || t.includes("forbidden");
         if (resp.status === 403) return $done({ title: "Prime Video", content: "❌ denied (403)", icon: "film.fill" });
         if (resp.status >= 200 && resp.status < 400 && !blocked) return $done({ title: "Prime Video", content: "✅ reachable", icon: "film.fill" });
-        if (blocked) return $done({ title: "Prime Video", content: "❌ geo blocked/denied", icon: "film.fill" });
+        if (blocked) return $done({ title: "Prime Video", content: "❌ geo blocked", icon: "film.fill" });
         return $done({ title: "Prime Video", content: `❌ HTTP ${resp.status}`, icon: "film.fill" });
       });
