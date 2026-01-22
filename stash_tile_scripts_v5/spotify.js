@@ -14,6 +14,7 @@ $httpClient.get({ url: URL, timeout: 8000, headers: HEADERS }, (err, resp, body)
   if (code === 403) return $done({ ...meta, content: "❌ Access Denied" });
   for (const h of HINTS) if (t.includes(h)) return $done({ ...meta, content: "❌ Geo Locked" });
 
-  if (code >= 200 && code < 400) return $done({ ...meta, content: `✅ Unlocked (HTTP ${code})` });
+  // 优化：直接显示 Available
+  if (code >= 200 && code < 400) return $done({ ...meta, content: "✅ Available" });
   return $done({ ...meta, content: `❌ Error (HTTP ${code})` });
 });
