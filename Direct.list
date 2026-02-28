@@ -17,9 +17,12 @@ DOMAIN-SUFFIX,bit.ly
 DOMAIN-SUFFIX,iill.top
 
 #fiance，东方财富、同花顺、证券时报
-DOMAIN-SUFFIX,eastmoney.com
 DOMAIN-SUFFIX,10jqka.com.cn
 DOMAIN-SUFFIX,stcn.com
+#东方财富
+DOMAIN-SUFFIX,eastmoney.com
+DOMAIN-SUFFIX,emdata.cn
+DOMAIN-SUFFIX,eastmoneysec.com
 
 #国区icloud
 DOMAIN-SUFFIX,icloud.com.cn
