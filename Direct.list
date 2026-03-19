@@ -1,10 +1,13 @@
 # 直连补充列表(国内域名不解析时，防止走代理使用)
 
-### MyList
+# ==========================
+### MyList (User Custom Rules)
+# ==========================
 #体育直播
 DOMAIN-SUFFIX,zhibo8.com
 DOMAIN-SUFFIX,kqzb123.com
 DOMAIN-SUFFIX,kqzb638.com
+DOMAIN-SUFFIX,kqzb.net
 DOMAIN-SUFFIX,ningmengzhibo.tv
 DOMAIN-SUFFIX,82kq01.com
 
@@ -28,6 +31,7 @@ DOMAIN-SUFFIX,eastmoneysec.com
 DOMAIN-SUFFIX,icloud.com.cn
 DOMAIN-SUFFIX,icloud.com
 DOMAIN-SUFFIX,icloud.cn
+DOMAIN-SUFFIX,apple.com
 
 #obsidian
 #DOMAIN-SUFFIX,a2e1f59.webp.li
@@ -35,6 +39,15 @@ DOMAIN-SUFFIX,icloud.cn
 #教师资格证报名网站
 DOMAIN-SUFFIX,neea.edu.cn
 DOMAIN-SUFFIX,ntcebm5.neea.edu.cn
+
+###RustDesk直连
+#Juhost
+IP-CIDR,191.96.29.106/32,DIRECT,no-resolve
+#vps.soy US
+IP-CIDR,154.9.237.240/32,DIRECT,no-resolve
+#Greencloud AU
+IP-CIDR,193.177.220.164/32,DIRECT,no-resolve
+
 
 
 
