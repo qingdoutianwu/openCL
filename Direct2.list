@@ -45,7 +45,8 @@ IP-CIDR,191.96.29.106/32,DIRECT,no-resolve
 IP-CIDR,154.9.237.240/32,DIRECT,no-resolve
 #Greencloud AU
 IP-CIDR,193.177.220.164/32,DIRECT,no-resolve
-
+#bitsflow JP
+IP-CIDR,216.23.84.129/32,DIRECT,no-resolve
 
 
 
