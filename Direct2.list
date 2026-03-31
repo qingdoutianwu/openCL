@@ -48,6 +48,10 @@ IP-CIDR,193.177.220.164/32,DIRECT,no-resolve
 #bitsflow JP
 IP-CIDR,216.23.84.129/32,DIRECT,no-resolve
 
+###招聘网站
+#51job、猎聘
+DOMAIN-SUFFIX,51job.com
+DOMAIN-SUFFIX,liepin.com
 
 
 # China Mainland Direct List (merged)
