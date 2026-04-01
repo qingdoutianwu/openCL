@@ -54,6 +54,9 @@ DOMAIN-SUFFIX,51job.com
 DOMAIN-SUFFIX,liepin.com
 
 
+DOMAIN-SUFFIX,linuxdo.org
+
+
 # China Mainland Direct List (merged)
 # Generated: 2025-09-01 01:42:43
 # Counts: DOMAIN=19 DOMAIN-KEYWORD=1 DOMAIN-SUFFIX=1032 DOMAIN-WILDCARD=1 IP-CIDR=8 USER-AGENT=3
